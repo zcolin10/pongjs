@@ -14,6 +14,18 @@ const wallSound = new Audio('wall_sound.wav');
 const winSound = new Audio('win_sound.wav');
 const loseSound = new Audio('lose_sound.wav');
 
+const startGameButton = document.getElementById('startGame');
+startGameButton.addEventListener('click', () => {
+    startGame();
+});
+
+
+const resetGameButton = document.getElementById('resetGame');
+resetGameButton.addEventListener('click', () => {
+    resetGame();
+});
+
+
 
 
 const user = {
@@ -159,6 +171,13 @@ document.addEventListener('keyup', (event) => {
     }
 });
 
+function startGame() {
+    gameLoop();
+}
 
-gameLoop();
+function resetGame() {
+    user.score = 0;
+    computer.score = 0;
+    resetBall();
+}
 
