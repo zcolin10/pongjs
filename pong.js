@@ -4,6 +4,11 @@ const ctx = canvas.getContext('2d');
 const paddleWidth = 10;
 const paddleHeight = 100;
 
+let gameStarted = false;
+let gameLoopId = null;
+
+
+
 const keys = {
     w: false,
     s: false
@@ -13,6 +18,14 @@ const paddleSound = new Audio('paddle_sound.wav');
 const wallSound = new Audio('wall_sound.wav');
 const winSound = new Audio('win_sound.wav');
 const loseSound = new Audio('lose_sound.wav');
+
+const obstacle = {
+    x: 0,
+    y: 0,
+    width: 20,
+    height: 80
+};
+
 
 const startGameButton = document.getElementById('startGame');
 startGameButton.addEventListener('click', () => {
@@ -82,6 +95,8 @@ function render() {
     drawCircle(ball.x, ball.y, ball.radius, ball.color);
     drawText(user.score, canvas.width / 4, canvas.height / 5, 'white');
     drawText(computer.score, 3 * canvas.width / 4, canvas.height / 5, 'white');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 }
 
 function collision(ball, paddle) {
@@ -127,6 +142,11 @@ function update() {
         ball.speed += 0.2;
     }
 
+    if (ball.x + ball.radius > obstacle.x && ball.x - ball.radius < obstacle.x + obstacle.width &&
+        ball.y + ball.radius > obstacle.y && ball.y - ball.radius < obstacle.y + obstacle.height) {
+        ball.velocityX = -ball.velocityX;
+    }
+
     if (ball.x - ball.radius < 0) {
         computer.score++;
         loseSound.play(); // Add this line to play the lose sound
@@ -150,10 +170,13 @@ function resetBall() {
 
 
 function gameLoop() {
-    render();
-    update();
-    requestAnimationFrame(gameLoop);
+    if (gameStarted) {
+        update();
+        render();
+        gameLoopId = requestAnimationFrame(gameLoop);
+    }
 }
+
 
 document.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() === 'w') {
@@ -171,13 +194,32 @@ document.addEventListener('keyup', (event) => {
     }
 });
 
-function startGame() {
-    gameLoop();
+function placeObstacle() {
+    obstacle.x = Math.floor(Math.random() * (canvas.width - 2 * obstacle.width)) + obstacle.width;
+    obstacle.y = Math.floor(Math.random() * (canvas.height - obstacle.height));
 }
 
-function resetGame() {
-    user.score = 0;
-    computer.score = 0;
-    resetBall();
+
+function startGame() {
+    if (!gameStarted) {
+        gameStarted = true;
+        placeObstacle();
+        gameLoop();
+    }
 }
+
+
+function resetGame() {
+    if (gameStarted) {
+        gameStarted = false;
+        user.score = 0;
+        computer.score = 0;
+        resetBall();
+        placeObstacle();
+        cancelAnimationFrame(gameLoopId);
+        startGame();
+    }
+}
+
+
 
